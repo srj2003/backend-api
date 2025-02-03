@@ -1,9 +1,14 @@
 const express = require("express");
-const { protect } = require("../middleware/attendeeMiddleware");
-const { rsvp, getAttendees } = require("../controllers/attendeeController");
+const auth = require("../middleware/auth");
+const {
+  rsvp,
+  cancelRsvp,
+  getAttendees,
+} = require("../controllers/attendeeController");
 const router = express.Router();
 
-router.post("/:eventId/rsvp", protect, rsvp);
-router.get("/:eventId/attendees", protect, getAttendees);
+router.post("/:eventId/rsvp", auth, rsvp);
+router.delete("/:eventId/rsvp", auth, cancelRsvp);
+router.get("/:eventId/attendees", auth, getAttendees);
 
 module.exports = router;

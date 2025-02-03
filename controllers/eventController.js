@@ -22,23 +22,19 @@ exports.getEvents = async (req, res) => {
   if (date) filter.date = { $gte: new Date(date) };
 
   try {
-    const events = await Event.find(filter).skip(skip).limit(limit);
-    res.json(events);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
+    const [events, total] = await Promise.all([
+      Event.find(filter).skip(skip).limit(limit),
+      Event.countDocuments(filter),
+    ]);
 
-exports.rsvpEvent = async (req, res) => {
-  const { eventId } = req.params;
-  try {
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ message: "Event not found." });
-    }
-    event.attendees.push(req.user.userId);
-    await event.save();
-    res.json(event);
+    res.json({
+      events,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
